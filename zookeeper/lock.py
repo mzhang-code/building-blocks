@@ -1,8 +1,12 @@
 '''Some basic implementations of lock primitive in Zookeeper.
-The python-zk/kazoo is used as python zk library. It should be mentioned that 
-kazoo already has itself implementation of lock in the 'recipe' module, 
-however this copy of work only uses the basic level api of kazoo and its 
-purpose targets at principle illustration.
+
+The python-zk/kazoo is used as python zk library. 
+https://github.com/python-zk/kazoo
+https://kazoo.readthedocs.org/en/latest
+
+It should be mentioned that kazoo already has itself implementation of lock 
+in the 'recipe' module, however this copy of work only uses the basic level 
+api of kazoo and its purpose targets at principle illustration.
 '''
 
 import sys
@@ -45,7 +49,7 @@ class EventZKLock():
         self.zk = zk
         self.cond_mutex = threading.Condition()
 
-    def on_node_change(self, event): 
+    def on_node_delete(self, event): 
         if event.type == kazoo.protocol.states.EventType.DELETED: 
             print 'lock node has been cleared'
             self.cond_mutex.acquire()
@@ -60,7 +64,7 @@ class EventZKLock():
         self.cond_mutex.acquire()
         while True: 
             try: 
-                stat = self.zk.exists('/lock', watch=self.on_node_change)
+                stat = self.zk.exists('/lock', watch=self.on_node_delete)
                 if not stat: 
                     self.zk.create('/lock', '', ephemeral=True)
                     break # acquire succeed
